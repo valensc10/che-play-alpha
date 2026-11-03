@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="cheplay">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#49246b">
+  <title>ChePlay · Minijuegos multijugador</title>
+  <meta name="description" content="ChePlay: 40 minijuegos rápidos para jugar con amigos desde el navegador. Un solo intento, podio en cada ronda.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ChePlay · Minijuegos multijugador">
+  <meta property="og:description" content="40 minijuegos rápidos, un solo intento y podio en cada ronda. ¡Armá una sala y jugá con tus amigos!">
+  <meta property="og:image" content="img/og.png"><!-- en producción usar URL absoluta: https://TU-DOMINIO/img/og.png -->
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+  <link rel="apple-touch-icon" href="img/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cheplay.css">
+</head>
+<body>
+  <a class="skip" href="#app">Saltar al contenido</a>
+  <div class="bg" id="bg" aria-hidden="true"></div>
+
+  <header id="topbar">
+    <a class="brand" id="brand" href="#" aria-label="ChePlay, ir al inicio"><img src="img/logo-sm.png" alt="ChePlay" width="140" height="58"></a>
+    <div class="top-actions">
+      <span id="conn" class="conn hidden" role="status">⚠️ Reconectando…</span>
+      <button id="btn-sound" class="icon-btn" title="Sonido" aria-label="Activar o silenciar el sonido">🔊</button>
+      <button id="btn-settings" class="icon-btn" title="Ajustes y accesibilidad" aria-label="Abrir ajustes y accesibilidad">⚙️</button>
+    </div>
+  </header>
+
+  <main id="app">
+
+    <!-- 1. NICKNAME -->
+    <section id="s-nick" class="screen active">
+      <div class="hero">
+        <h1 class="logo-wrap">
+          <img class="logo-img" src="img/logo.png" alt="ChePlay" width="520" height="215">
+          <i class="spark s1" aria-hidden="true">✦</i><i class="spark s2" aria-hidden="true">★</i><i class="spark s3" aria-hidden="true">✦</i><i class="spark s4" aria-hidden="true">★</i>
+        </h1>
+        <p class="tagline">Minijuegos en tiempo real para jugar con tus amigos</p>
+        <ul class="chips" aria-label="Características">
+          <li>⚡ 40 minijuegos</li><li>🎯 Un solo intento</li><li>👥 Hasta 24 jugadores</li><li>🏆 Podio en cada ronda</li>
+        </ul>
+      </div>
+      <div id="login-box" class="card narrow login-card hidden">
+        <h2>☁️ Guardá tu progreso</h2>
+        <p class="hint">Iniciá sesión para conservar tu nickname, tu avatar y tus récords de cada juego. También podés jugar sin cuenta.</p>
+        <div id="gsi-btn" class="gsi-btn"></div>
+        <div id="gsi-msg" class="hint hidden"></div>
+        <div id="dev-login" class="dev-login hidden">
+          <small>🧪 Modo de prueba (solo en desarrollo)</small>
+          <div class="row"><input id="dev-name" type="text" maxlength="14" placeholder="Nombre de prueba" autocomplete="off"><button id="btn-dev" class="btn blue sm">Entrar</button></div>
+        </div>
+        <div class="or-sep"><span>o jugá como invitado</span></div>
+      </div>
+      <div class="card narrow">
+        <h2>¿Quién sos?</h2>
+        <label class="lbl" for="in-nick">Nickname</label>
+        <input id="in-nick" type="text" maxlength="14" placeholder="Tu apodo…" autocomplete="off">
+        <label class="lbl">Elegí tu avatar</label>
+        <div id="avatars" class="avatars"></div>
+        <button id="btn-nick-ok" class="btn green big">CONTINUAR ▶</button>
+        <div id="nick-err" class="err hidden"></div>
+      </div>
+    </section>
+
+    <!-- 2. MENÚ DE LOBBIES -->
+    <section id="s-menu" class="screen">
+      <div class="menu-head">
+        <button id="btn-profile" class="profile"><span id="me-avatar">😀</span><span id="me-nick">Jugador</span><small>cambiar</small></button>
+        <div class="menu-actions">
+          <button id="btn-practice" class="btn blue">🎯 Practicar</button>
+          <button id="btn-create" class="btn green">➕ Crear lobby</button>
+        </div>
+      </div>
+      <div id="login-cta" class="login-cta hidden"><span>☁️ Iniciá sesión con Google para guardar tu perfil y tus récords.</span><button id="btn-login-cta" class="btn blue sm">Iniciar sesión</button></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h2>Lobbies abiertos</h2><span class="pill live"><i></i> en vivo</span></div>
+          <div id="lobby-list" class="lobby-list"></div>
+        </div>
+        <div class="card">
+          <h2>Unirse con código</h2>
+          <input id="in-code" class="code-input" type="text" maxlength="4" placeholder="ABCD" autocomplete="off">
+          <input id="in-code-pass" type="password" maxlength="20" placeholder="Contraseña (si tiene)" class="hidden" autocomplete="off">
+          <button id="btn-join-code" class="btn blue big">UNIRSE</button>
+          <div id="menu-err" class="err hidden"></div>
+          <p class="hint">Pedile el código de 4 letras a quien creó el lobby, o elegí uno de la lista.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUENTA -->
+    <section id="s-account" class="screen">
+      <div class="menu-head">
+        <button id="btn-acc-back" class="btn ghost">◀ Volver</button>
+        <div class="seg" id="acc-tabs" role="tablist"><button data-t="profile" class="on" role="tab">👤 Perfil</button><button data-t="stats" role="tab">📊 Estadísticas</button></div>
+      </div>
+      <div id="acc-profile" class="card narrow wide-ok">
+        <h2>Mi perfil</h2>
+        <p class="hint acc-mail">Sesión iniciada como <b id="acc-email"></b></p>
+        <label class="lbl" for="acc-nick">Nickname</label>
+        <input id="acc-nick" type="text" maxlength="14" autocomplete="off">
+        <label class="lbl">Avatar</label>
+        <div id="acc-avatars" class="avatars"></div>
+        <button id="btn-acc-save" class="btn green big">GUARDAR CAMBIOS</button>
+        <div id="acc-err" class="err hidden"></div>
+        <p class="hint">Tu nickname y tu avatar se usan automáticamente en todos los lobbies. Los récords solo se guardan en partidas con lobby, no en el modo práctica.</p>
+        <div class="row acc-danger"><button id="btn-logout" class="btn ghost">Cerrar sesión</button><button id="btn-delete" class="btn ghost danger">Borrar mi cuenta</button></div>
+      </div>
+      <div id="acc-stats" class="hidden">
+        <div id="st-summary" class="st-summary"></div>
+        <div id="st-list"></div>
+      </div>
+    </section>
+
+    <!-- PRÁCTICA -->
+    <section id="s-practice" class="screen">
+      <div class="menu-head">
+        <button id="btn-practice-back" class="btn ghost">◀ Volver</button>
+        <div class="seg" id="practice-diff">
+          <button data-d="0">Fácil</button><button data-d="1" class="on">Normal</button><button data-d="2">Difícil</button>
+        </div>
+      </div>
+      <div class="card"><h2>Modo práctica</h2><p class="hint">Probá cualquier juego sin presión. No suma puntos.</p>
+        <div id="practice-grid"></div></div>
+    </section>
+
+    <!-- 3. LOBBY -->
+    <section id="s-lobby" class="screen">
+      <div class="lobby-top">
+        <div>
+          <div class="lobby-name" id="lb-name">Lobby</div>
+          <div class="lobby-meta"><button id="lb-code" class="code-chip" title="Copiar código">----</button><span id="lb-vis" class="pill"></span><span id="lb-role" class="pill role"></span></div>
+        </div>
+        <button id="btn-leave" class="btn ghost">🚪 Salir</button>
+      </div>
+
+      <div class="lobby-grid">
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2>Jugadores</h2><span class="pill" id="lb-count">0/0</span></div>
+            <ul id="players" class="players"></ul>
+          </div>
+          <div class="card chat-card" id="chat-card">
+            <h2>Chat</h2>
+            <div id="chat-log" class="chat-log"></div>
+            <div class="chat-in"><input id="in-chat" maxlength="120" placeholder="Escribí un mensaje…" autocomplete="off"><button id="btn-chat" class="btn blue sm">➤</button></div>
+          </div>
+        </div>
+
+        <div class="col wide">
+          <div class="card" id="cfg-card">
+            <div class="card-head"><h2>Configuración</h2><span id="cfg-lock" class="pill warn hidden">🔒 Solo el host puede cambiarla</span></div>
+            <div class="cfg-grid">
+              <label class="field"><span>Nombre del lobby</span><input id="cfg-name" maxlength="24"></label>
+              <label class="field"><span>Cantidad de juegos <b id="v-totalGames"></b></span><input id="cfg-totalGames" type="range" min="1" max="24" step="1"></label>
+              <label class="field"><span>Puntos para ganar <b id="v-targetPoints"></b></span><input id="cfg-targetPoints" type="range" min="0" max="300" step="10"></label>
+              <label class="field"><span>Máx. jugadores <b id="v-maxPlayers"></b></span><input id="cfg-maxPlayers" type="range" min="2" max="24" step="1"></label>
+              <label class="field"><span>Tiempo de instrucciones <b id="v-introSeconds"></b></span><input id="cfg-introSeconds" type="range" min="3" max="15" step="1"></label>
+              <label class="field"><span>Tiempo del podio <b id="v-podiumSeconds"></b></span><input id="cfg-podiumSeconds" type="range" min="4" max="30" step="1"></label>
+              <div class="field"><span>Dificultad</span><div class="seg" id="cfg-difficulty"><button data-v="0">Fácil</button><button data-v="1">Normal</button><button data-v="2">Difícil</button></div></div>
+              <div class="field"><span>Orden de juegos</span><div class="seg" id="cfg-order"><button data-v="random">Aleatorio</button><button data-v="fixed">Fijo</button></div></div>
+              <div class="field"><span>Tema visual</span><div id="cfg-theme" class="themes"></div></div>
+              <div class="field switches">
+                <label class="sw"><input type="checkbox" id="cfg-isPublic"><i></i><span>Lobby público</span></label>
+                <label class="sw"><input type="checkbox" id="cfg-manualAdvance"><i></i><span>Podio manual (el host avanza)</span></label>
+                <label class="sw"><input type="checkbox" id="cfg-chat"><i></i><span>Chat habilitado</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Juegos habilitados <span class="pill" id="games-count"></span></h2>
+              <div class="mini-actions" id="games-actions"><button id="g-all" class="btn ghost sm">Todos</button><button id="g-none" class="btn ghost sm">Ninguno</button></div></div>
+            <div id="games-pool"></div>
+          </div>
+
+          <div class="start-bar">
+            <button id="btn-start" class="btn orange huge hidden">🚀 ¡INICIAR PARTIDA!</button>
+            <div id="wait-host" class="waiting hidden">⏳ Esperando que el host inicie la partida…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. JUEGO -->
+    <section id="s-game" class="screen">
+      <div class="hud">
+        <div class="hud-pill"><small>RONDA</small><b id="hud-round">1/8</b></div>
+        <div class="hud-title"><span id="hud-emoji">🎮</span> <span id="hud-name">Minijuego</span></div>
+        <div class="hud-pill score"><small>PUNTOS</small><b id="hud-score">0</b></div>
+      </div>
+      <div class="timebar" role="progressbar" aria-label="Tiempo restante"><div id="timebar-fill"></div></div>
+      <div id="livebar" class="livebar hidden" aria-label="Puntajes en vivo"></div>
+      <div class="stage-card" id="stage-card">
+        <div id="stage"></div>
+
+        <div id="intro" class="overlay hidden">
+          <div id="roulette" class="roulette hidden" aria-hidden="true"><div class="rl-mark"></div><div class="rl-track" id="rl-track"></div></div>
+          <div id="intro-info" class="intro-info">
+            <div class="intro-emoji" id="in-emoji">🎮</div>
+            <h2 id="in-title">Juego</h2>
+            <p id="in-desc" class="intro-desc"></p>
+            <div class="intro-hint" id="in-hint"></div>
+            <div class="intro-count" id="in-count">3</div>
+            <div class="intro-note">Un solo intento. Todos juegan lo mismo.</div>
+          </div>
+        </div>
+
+        <div id="done" class="overlay hidden">
+          <div class="done-emoji">🏁</div>
+          <h2>¡Terminaste!</h2>
+          <div class="done-score"><span id="done-score">0</span><small>puntos</small></div>
+          <p id="done-wait" class="intro-desc">Esperando a los demás…</p>
+          <div class="progress"><div id="done-bar"></div></div>
+          <div id="practice-btns" class="row hidden">
+            <button id="btn-retry" class="btn orange">↻ Reintentar</button>
+            <button id="btn-practice-exit" class="btn blue">Elegir otro</button>
+          </div>
+        </div>
+      </div>
+      <button id="btn-quit-practice" class="btn ghost sm hidden">✖ Salir de la práctica</button>
+    </section>
+
+    <!-- 5. PODIO DE RONDA -->
+    <section id="s-podium" class="screen">
+      <div class="podium-head"><div class="eyebrow" id="pd-round">Ronda 1/8</div><h2 id="pd-title">Resultados</h2></div>
+      <div id="pd-stage" class="podium-stage"></div>
+      <div class="card"><ol id="pd-list" class="rank-list"></ol></div>
+      <div class="next-bar">
+        <div class="progress thin"><div id="pd-bar"></div></div>
+        <button id="btn-next" class="btn orange big hidden">SIGUIENTE ▶</button>
+        <div id="pd-note" class="waiting"></div>
+      </div>
+    </section>
+
+    <!-- 6. FINAL -->
+    <section id="s-final" class="screen">
+      <div class="podium-head"><div class="eyebrow">¡Fin de la partida!</div><h2 id="fn-title">🏆 Campeón</h2></div>
+      <div id="fn-stage" class="podium-stage big"></div>
+      <div id="fn-awards" class="awards hidden"></div>
+      <div class="card"><ol id="fn-list" class="rank-list"></ol></div>
+      <div class="row center">
+        <button id="btn-rematch" class="btn orange big">🔁 REVANCHA <span id="rematch-n" class="rematch-n"></span></button>
+        <button id="btn-to-lobby" class="btn green big hidden">↩ VOLVER AL LOBBY</button>
+        <button id="btn-final-leave" class="btn blue big">🚪 SALIR</button>
+      </div>
+      <div id="fn-note" class="waiting"></div>
+      <a class="cafe-card" href="https://cafecito.app/che-play" target="_blank" rel="noopener noreferrer">
+        <span class="cafe-cup" aria-hidden="true"><i></i><i></i><i></i>☕</span>
+        <span class="cafe-txt"><b>¿Te divertiste?</b><small>ChePlay es un proyecto individual. Si querés apoyarlo, invitame un cafecito.</small></span>
+        <span class="cafe-go">Invitame un cafecito</span>
+      </a>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <img src="img/logo-sm.png" alt="ChePlay" width="110" height="45">
+    <p>Proyecto individual · 2026</p>
+    <a class="foot-cafe" href="https://cafecito.app/che-play" target="_blank" rel="noopener noreferrer">☕ Invitame un cafecito</a>
+  </footer>
+
+  <!-- Botón flotante de Cafecito -->
+  <a id="cafe-fab" class="cafe-fab" href="https://cafecito.app/che-play" target="_blank" rel="noopener noreferrer" aria-label="Invitame un cafecito (se abre en otra pestaña)">
+    <span class="cup" aria-hidden="true"><i class="steam s1"></i><i class="steam s2"></i><i class="steam s3"></i>☕</span>
+    <span class="lbl">Invitame un cafecito</span>
+  </a>
+
+  <!-- Reacciones -->
+  <div id="reactbar" class="reactbar hidden" role="toolbar" aria-label="Reacciones">
+    <div id="phrase-pop" class="phrase-pop hidden"></div>
+    <div class="rb-row" id="rb-row"></div>
+  </div>
+  <div id="react-layer" class="react-layer" aria-hidden="true"></div>
+  <div id="sr-live" class="sr-only" role="status" aria-live="polite"></div>
+
+  <!-- MODAL CREAR LOBBY -->
+  <div id="modal-create" class="modal hidden" role="dialog" aria-modal="true" aria-label="Crear lobby">
+    <div class="modal-box card">
+      <h2>Crear lobby</h2>
+      <label class="field"><span>Nombre</span><input id="mc-name" maxlength="24" placeholder="Sala de los pibes"></label>
+      <label class="field"><span>Máx. jugadores <b id="mc-max-v">12</b></span><input id="mc-max" type="range" min="2" max="24" value="12"></label>
+      <label class="sw"><input type="checkbox" id="mc-public" checked><i></i><span>Lobby público (aparece en la lista)</span></label>
+      <label class="field"><span>Contraseña (opcional)</span><input id="mc-pass" maxlength="20" placeholder="Dejá vacío para no usar"></label>
+      <div id="mc-err" class="err hidden"></div>
+      <div class="row"><button id="mc-cancel" class="btn ghost">Cancelar</button><button id="mc-ok" class="btn green">CREAR</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL AJUSTES -->
+  <div id="modal-settings" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="st-title">
+    <div class="modal-box card settings-box">
+      <div class="card-head"><h2 id="st-title">⚙️ Ajustes</h2><button id="st-close" class="icon-btn" aria-label="Cerrar ajustes">✖</button></div>
+      <div class="st-sec"><h3>🔊 Sonido</h3>
+        <label class="st-row"><span>Volumen</span><input id="st-vol" type="range" min="0" max="100" step="5" aria-label="Volumen"></label>
+        <label class="sw"><input type="checkbox" id="st-mute"><i></i><span>Silenciar todo</span></label>
+        <label class="sw"><input type="checkbox" id="st-vib"><i></i><span>Vibración en el celular</span></label>
+      </div>
+      <div class="st-sec"><h3>👁️ Pantalla</h3>
+        <label class="sw"><input type="checkbox" id="st-motion"><i></i><span>Reducir movimiento y animaciones</span></label>
+        <label class="sw"><input type="checkbox" id="st-fx"><i></i><span>Sin destellos ni sacudidas</span></label>
+        <label class="sw"><input type="checkbox" id="st-contrast"><i></i><span>Alto contraste</span></label>
+        <label class="sw"><input type="checkbox" id="st-cb"><i></i><span>Modo daltónico (azul y naranja en vez de verde y rojo)</span></label>
+        <div class="st-row"><span>Tamaño del texto</span><div class="seg" id="st-text" role="group" aria-label="Tamaño del texto"><button data-v="s">Normal</button><button data-v="m">Grande</button><button data-v="l">Muy grande</button></div></div>
+      </div>
+      <div class="st-sec"><h3>🎮 Juego</h3>
+        <label class="sw"><input type="checkbox" id="st-left"><i></i><span>Modo zurdo (invierte los botones de a dos)</span></label>
+        <label class="sw"><input type="checkbox" id="st-live"><i></i><span>Mostrar puntajes de los demás en vivo</span></label>
+        <label class="sw"><input type="checkbox" id="st-react"><i></i><span>Mostrar reacciones de otros jugadores</span></label>
+        <label class="sw"><input type="checkbox" id="st-roulette"><i></i><span>Animación de ruleta antes de cada juego</span></label>
+      </div>
+      <div class="row"><button id="st-reset" class="btn ghost">Restablecer</button><button id="st-ok" class="btn green">LISTO</button></div>
+      <p class="hint">Los ajustes se guardan en este navegador. La dificultad y los tiempos los define quien crea el lobby, para que sea justo para todos.</p>
+    </div>
+  </div>
+
+  <div id="toasts" role="status" aria-live="polite"></div>
+  <canvas id="confetti"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared/catalog.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/games/set1.js"></script>
+  <script src="js/games/set2.js"></script>
+  <script src="js/games/set3.js"></script>
+  <script src="js/games/set4.js"></script>
+  <script src="js/games/set5.js"></script>
+  <script src="js/roulette.js"></script>
+  <script src="js/social.js"></script>
+  <script src="js/account.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
